@@ -12,10 +12,8 @@ project "Naja"
     targetdir "bin/%{prj.name}"
     objdir    "bin-int/%{prj.name}"
 
-    files { "%{prj.location}/src/Naja/**.c"
-          , "%{prj.location}/src/Naja/**.h"
-          , "%{prj.location}/src/flex_bison/parser.c"
-          , "%{prj.location}/src/flex_bison/scanner.c"
+    files { "%{prj.location}/src/**.c"
+          , "%{prj.location}/src/**.h"
           }
 
     buildoptions { "-lfl" }
