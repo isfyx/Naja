@@ -1,1 +1,8 @@
+# Premake5
 bin/
+bin-int/
+Makefile
+
+# Flex & Bison
+Naja/src/flex_bison/*.h
+Naja/src/flex_bison/*.c
