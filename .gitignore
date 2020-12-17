@@ -4,5 +4,6 @@ bin-int/
 Makefile
 
 # Flex & Bison
-Naja/src/flex_bison/*.h
-Naja/src/flex_bison/*.c
+Naja/src/flex_bison/parser.h
+Naja/src/flex_bison/parser.c
+Naja/src/flex_bison/scanner.c

@@ -12,6 +12,8 @@ project "Naja"
     targetdir "bin/%{prj.name}"
     objdir    "bin-int/%{prj.name}"
 
+    includedirs { "%{prj.location}/src" }
+
     files { "%{prj.location}/src/**.c"
           , "%{prj.location}/src/**.h"
           }
@@ -34,4 +36,5 @@ project "flex_bison"
     prebuildcommands
     { "bison -d -o %{prj.location}/parser.c %{prj.location}/parser.y"
     , "flex -o %{prj.location}/scanner.c %{prj.location}/scanner.l"
+    --header-file=%{prj.location}/scanner.h
     }
