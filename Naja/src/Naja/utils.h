@@ -1,21 +1,32 @@
 #pragma once
 
-#define N_FILE_BUF_SIZE     16384
-#define N_FILENAME          ((!n_filestack) ? "MAIN" : n_filestack->filename)
-
 #include <stdio.h>
 
-typedef struct n_FileStack n_FileStack;
-struct n_FileStack
-{
-    n_FileStack* prev;
-    int          buf_state;
-    int          lineno;
-    char*        filename;
-    FILE*        file;
-};
+#include "values.h"
 
-extern n_FileStack* n_filestack;
+void n_trace(int lineno, n_Value* value);
 
-int n_FS_push(char* filename);
-int n_FS_pop();
+// Logic
+n_Value* n_disjunction(n_Value* a, n_Value* b);
+n_Value* n_conjunction(n_Value* a, n_Value* b);
+n_Value* n_negate(n_Value* v);
+
+// Comparators
+n_Value* n_compare_eq(n_Value* a, n_Value* b);
+n_Value* n_compare_geq(n_Value* a, n_Value* b);
+n_Value* n_compare_leq(n_Value* a, n_Value* b);
+n_Value* n_compare_neq(n_Value* a, n_Value* b);
+n_Value* n_compare_gt(n_Value* a, n_Value* b);
+n_Value* n_compare_lt(n_Value* a, n_Value* b);
+
+// Math
+n_Value* n_add(n_Value* a, n_Value* b);
+n_Value* n_sub(n_Value* a, n_Value* b);
+n_Value* n_mul(n_Value* f1, n_Value* f2);
+n_Value* n_divide(n_Value* f1, n_Value* f2);
+n_Value* n_int_divide(n_Value* f1, n_Value* f2);
+n_Value* n_mod(n_Value* f1, n_Value* f2);
+n_Value* n_unary_plus(n_Value* v);
+n_Value* n_unary_minus(n_Value* v);
+n_Value* n_exp(n_Value* base, n_Value* exp);
+

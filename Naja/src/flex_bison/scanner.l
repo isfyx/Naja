@@ -3,11 +3,13 @@
 %x CLOSE
 
 %{
+#include "Naja/values.h"
 #include "Naja/utils.h"
 
 #include "parser.h"
 
-extern n_FileStack* n_fs;
+extern n_Scope* n_current_scope;
+extern int      n_lineno;
 %}
 
 number      [0-9]+
@@ -15,8 +17,8 @@ decimal     ({number}?\.?{number}|{number}\.)
 exponent    ([eE]("+"|"-")?{number})
 
 alpha           [a-zA-Z]
-alphanumeric    [{alpha}{number}]
-word            [_{alpha}]+[_{alphanumeric}]*
+alphanumeric    ({alpha}|{number})
+word            (_|{alpha})+(_|{alphanumeric})*
 
 whitespace [ \t]
 
@@ -25,23 +27,26 @@ whitespace [ \t]
 <CLOSE><<EOF>> { yyterminate(); }
 
 <<EOF>> {
-    yylineno++;
+    n_lineno++;
     BEGIN CLOSE;
     return END_OF_FILE;
 }
 
-{number} {
-    yylval.nval.type  = INT;
-    yylval.nval.size  = sizeof(long int);
-    yylval.nval.value = malloc(yylval.nval.size);
-    *(yylval.nval.value) = atol(yytext); 
+{number} { // INT
+    yylval.nval = n_new_int(atol(yytext));
     return INT;
 }
 
-{decimal}{exponent}? {
-    yylval.dval = atof(yytext);
+{decimal}{exponent}? { // FLOAT
+    yylval.nval = n_new_float(atof(yytext));
     return FLOAT;
 }
+
+"="     { return ASSIGN; }
+
+"True"      { yylval.nval = n_new_boolean(1); return BOOL;   }
+"False"     { yylval.nval = n_new_boolean(0); return BOOL;   }
+"Null"      { yylval.nval = n_new_null(n_current_scope);       return N_NULL; }
 
 "or"    { return OR;  }
 "and"   { return AND; }
@@ -58,15 +63,22 @@ whitespace [ \t]
 "-"     { return DASH;    }
 "*"     { return AST;     }
 "/"     { return SLASH;   }
+"//"    { return DSLASH;  }
 "%"     { return PERCENT; }
 "**"    { return DAST;    }
 
 "("     { return LPAR; }
 ")"     { return RPAR; }
 
+{word} { // NAME
+    yylval.nval = calloc(strlen(yytext)+1, sizeof(char));
+    strcpy(yylval.nval, yytext);
+    return NAME;
+}
+
 {whitespace}    { /* Ignore whitespace */ }
 "#".*           { /* Ignore comments */ }
-\n              { yylineno++; return EOL; }
+\n              { n_lineno++; return EOL; }
 .               { printf("Unrecognized character '%c'\n", *yytext); }
 
 %%

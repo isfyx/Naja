@@ -2,38 +2,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "Naja/values.h"
 #include "Naja/utils.h"
 
 int  yylex();
 void yyerror(const char *s);
 
-extern int yylineno;
+extern n_Scope* n_current_scope;
+extern int      n_lineno;
 %}
 
-%code requires { #include "Naja/value.h" }
-
 %union {
-    long     lval;
-    double   dval;
-    char     sval[256];
-    n_value  nval;
+    void* nval;
 }
+
+%token ASSIGN
 
 %token OR AND NOT
 %token EQ GEQ LEQ NEQ GT LT
 
-%token PLUS DASH SLASH AST PERCENT DAST
+%token PLUS DASH SLASH DSLASH AST PERCENT DAST
 %token LPAR RPAR
 
 %token EOL END_OF_FILE
 
-%token<nval> INT
-%token<dval> FLOAT
+%token<nval> INT FLOAT BOOL N_NULL STRING NAME
 
-%type<sval> statement terminator
-%type<lval> expression
-%type<lval> disjuction conjuction negation comparrison
-%type<lval> value term factor exp
+%type<nval> statement terminator expression assignment
+%type<nval> disjuction conjuction negation comparrison
+%type<nval> value term factor exp
 %type<nval> atom
 
 %%
@@ -41,67 +38,73 @@ extern int yylineno;
 program: statements;
 
 statements:
-          | statements statement    { printf("[%s:%04d] -> %s\n", N_FILENAME, yylineno, $2); }
+          | statements statement    { n_trace(n_lineno, $2); n_destroy_value($2); }
           ;
 
 statement:            terminator
-         | expression terminator    { sprintf($$, "%ld", $1); }
+         | expression terminator    { n_destroy_value($2); }
          ;
 
-terminator: EOL             { sprintf($$, "EMPTY_LINE"); }
-          | END_OF_FILE     { sprintf($$, "END_OF_FILE"); }
+terminator: EOL             { $$ = n_new_null(n_current_scope); }
+          | END_OF_FILE     { $$ = n_new_null(n_current_scope); }
           ;
 
-expression: disjuction;
+expression: disjuction
+          | assignment
+          ;
+
+assignment: NAME ASSIGN expression  { $$ = n_assign_name(n_current_scope, $3, $1); free($1); n_destroy_value($3); }
+          ;
 
 disjuction:               conjuction 
-          | disjuction OR conjuction    { $$ = $1 ? $1 : $3; }
+          | disjuction OR conjuction    { $$ = n_disjunction($1, $3); n_destroy_value($1); n_destroy_value($3); }
           ;
 
 conjuction:                negation
-          | conjuction AND negation     { $$ = !$1 ? $1 : $3; }
+          | conjuction AND negation     { $$ = n_conjunction($1, $3); n_destroy_value($1); n_destroy_value($3); }
           ;
 
 negation:     comparrison
-        | NOT comparrison   { $$ = !$2; }
+        | NOT comparrison   { $$ = n_negate($2); n_destroy_value($2); }
         ;
 
 comparrison:           value
-           | value EQ  value    { $$ = $1 == $3; }
-           | value GEQ value    { $$ = $1 >= $3; }
-           | value LEQ value    { $$ = $1 <= $3; }
-           | value NEQ value    { $$ = $1 != $3; }
-           | value GT  value    { $$ = $1 >  $3; }
-           | value LT  value    { $$ = $1 <  $3; }
+           | value EQ  value    { $$ = n_compare_eq($1, $3);  n_destroy_value($1); n_destroy_value($3); }
+           | value GEQ value    { $$ = n_compare_geq($1, $3); n_destroy_value($1); n_destroy_value($3); }
+           | value LEQ value    { $$ = n_compare_leq($1, $3); n_destroy_value($1); n_destroy_value($3); }
+           | value NEQ value    { $$ = n_compare_neq($1, $3); n_destroy_value($1); n_destroy_value($3); }
+           | value GT  value    { $$ = n_compare_gt($1, $3);  n_destroy_value($1); n_destroy_value($3); }
+           | value LT  value    { $$ = n_compare_lt($1, $3);  n_destroy_value($1); n_destroy_value($3); }
            ;
 
 value:            factor
-     | value PLUS factor { $$ = $1 + $3; }
-     | value DASH factor { $$ = $1 - $3; }
+     | value PLUS factor { $$ = n_add($1, $3); n_destroy_value($1); n_destroy_value($3); }
+     | value DASH factor { $$ = n_sub($1, $3); n_destroy_value($1); n_destroy_value($3); }
      ;
 
 factor:                term
-      | factor AST     term   { $$ = $1 * $3; }
-      | factor SLASH   term   { $$ = $3 != 0 ? $1 / $3 : 0; }
-      | factor PERCENT term   { $$ = $1 % $3; }
+      | factor AST     term   { $$ = n_mul($1, $3);        n_destroy_value($1); n_destroy_value($3); }
+      | factor SLASH   term   { $$ = n_divide($1, $3);     n_destroy_value($1); n_destroy_value($3); }
+      | factor DSLASH  term   { $$ = n_int_divide($1, $3); n_destroy_value($1); n_destroy_value($3); }
+      | factor PERCENT term   { $$ = n_mod($1, $3);        n_destroy_value($1); n_destroy_value($3); }
       ;
 
 term:      exp
-    | PLUS exp      { $$ = $2;  }
-    | DASH exp      { $$ = -$2; }
+    | PLUS exp      { $$ = n_unary_plus($2); n_destroy_value($2);  }
+    | DASH exp      { $$ = n_unary_minus($2); n_destroy_value($2); }
     ;
 
 exp: atom
-   | atom DAST atom     { { int p = 1;
-                            for (int i = 0; i < $3; i++)
-                                p *= $1;
-                            $$ = p;
-                        } }
+   | atom DAST atom     { $$ = n_exp($1, $3); n_destroy_value($1); n_destroy_value($3); }
    ;
 
 atom: INT
-    | FLOAT                     { $$ = (long)$1; }
-    | LPAR expression RPAR      { $$ = $2;       }
+    | FLOAT
+    | BOOL
+    | N_NULL
+    | STRING
+    | NAME                  { $$ = n_copy_value(n_lookup(n_current_scope, $1)); free($1); }
+    | LPAR expression RPAR  { $$ = $2; }
     ;
 
 %%
