@@ -4,7 +4,7 @@ workspace "Naja"
                    }
 
 project "Naja"
-    location "Naja"
+    location "src"
     kind "ConsoleApp"
     language "C"
     links "flex_bison"
@@ -12,10 +12,10 @@ project "Naja"
     targetdir "bin/%{prj.name}"
     objdir    "bin-int/%{prj.name}"
 
-    includedirs { "%{prj.location}/src" }
+    includedirs { "%{prj.location}" }
 
-    files { "%{prj.location}/src/**.c"
-          , "%{prj.location}/src/**.h"
+    files { "%{prj.location}/**.c"
+          , "%{prj.location}/**.h"
           }
 
     buildoptions { "-lfl" }
@@ -30,7 +30,7 @@ project "Naja"
 
 
 project "flex_bison"
-    location "Naja/src/flex_bison"
+    location "src/flex_bison"
     kind "Utility"
 
     prebuildcommands

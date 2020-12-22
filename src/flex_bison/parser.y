@@ -16,11 +16,12 @@ extern int      n_lineno;
     void* nval;
 }
 
-%token ASSIGN
+%token ASSIGN LAMBDA
 
 %token OR AND NOT
 %token EQ GEQ LEQ NEQ GT LT
 
+%token COL
 %token PLUS DASH SLASH DSLASH AST PERCENT DAST
 %token LPAR RPAR
 
@@ -28,10 +29,10 @@ extern int      n_lineno;
 
 %token<nval> INT FLOAT BOOL N_NULL STRING NAME
 
-%type<nval> statement terminator expression assignment
+%type<nval> statement terminator expression assignment lambda vars 
 %type<nval> disjuction conjuction negation comparrison
 %type<nval> value term factor exp
-%type<nval> atom
+%type<nval> atom 
 
 %%
 
@@ -49,9 +50,16 @@ terminator: EOL             { $$ = n_new_null(n_current_scope); }
           | END_OF_FILE     { $$ = n_new_null(n_current_scope); }
           ;
 
-expression: disjuction
+expression: lambda
           | assignment
+          | disjuction
           ;
+
+lambda: LAMBDA vars COL expression     { $$ = n_new_lambda($2, $4); n_destoy_vars($2); n_destoy_value($4); }
+
+vars:               { $$ = 0; }
+    | vars NAME
+    ;
 
 assignment: NAME ASSIGN expression  { $$ = n_assign_name(n_current_scope, $3, $1); free($1); n_destroy_value($3); }
           ;
