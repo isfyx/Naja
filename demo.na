@@ -1,0 +1,17 @@
+# comment
+
+not indented
+    indented
+
+dedented
+
+not indented
+    indented
+        indented twice
+
+dedented twice
+
+        indented twice
+    incorrectly dedented
+
+dedented

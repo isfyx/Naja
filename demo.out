@@ -1,0 +1,15 @@
+Scanning comment
+Scanner error (3,0): Unrecognized character 'n'
+Scanner error (3,1): Unrecognized character 'o'
+Scanner error (3,2): Unrecognized character 't'
+Scanner error (3,3): Unrecognized character ' '
+Scanner error (3,4): Unrecognized character 'i'
+Scanner error (3,5): Unrecognized character 'n'
+Scanner error (3,6): Unrecognized character 'd'
+Scanner error (3,7): Unrecognized character 'e'
+Scanner error (3,8): Unrecognized character 'n'
+Scanner error (3,9): Unrecognized character 't'
+Scanner error (3,10): Unrecognized character 'e'
+Scanner error (3,11): Unrecognized character 'd'
+Scanning INDENT
+'    i'5

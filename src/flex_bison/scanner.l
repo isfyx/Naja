@@ -1,84 +1,77 @@
-%option noyywrap
-
-%x CLOSE
-
 %{
-#include "Naja/values.h"
-#include "Naja/utils.h"
-
 #include "parser.h"
-
-extern n_Scope* n_current_scope;
-extern int      n_lineno;
+#include "Naja/utils.h"
 %}
+%option noyywrap
+%array
+%x SC_INDENT SC_DEDENT
 
-number      [0-9]+
-decimal     ({number}?\.?{number}|{number}\.)
-exponent    ([eE]("+"|"-")?{number})
-
-alpha           [a-zA-Z]
-alphanumeric    ({alpha}|{number})
-word            (_|{alpha})+(_|{alphanumeric})*
-
-whitespace [ \t]
+newline \n[ \t]*
 
 %%
 
-<CLOSE><<EOF>> { yyterminate(); }
+{newline} {{
+    char c = input();
+    // Skip ahead if the next line is empty or a comment
+    if (c != '#' && c != '\n') {
+        unput(c);
 
-<<EOF>> {
-    n_lineno++;
-    BEGIN CLOSE;
-    return END_OF_FILE;
+        n_col = strlen(yytext)-1;
+
+        // Expand tabs
+        for (size_t i = n_col; i > 0; i--)
+            if (yytext[i] == '\t')
+                n_col += N_TAB_WIDTH-1;
+
+        //
+        if (n_col != n_indent) {
+            for (size_t i = 0; i < n_col; i++)
+                unput(' ');
+            BEGIN (n_col > n_indent ? SC_INDENT : SC_DEDENT);
+        }
+
+        n_line++;
+        return EOL;
+    }
+    unput(c);
+    n_line++;
+}}
+
+<SC_INDENT>" "*. {
+    printf("Scanning INDENT\n");
+    n_indent_push();
+    printf("'%s'%d\n", yytext, strlen(yytext));
+    for (size_t i = strlen(yytext)-1; i >= 0; i--)
+        unput(yytext[i]);
+    BEGIN INITIAL;
+    return INDENT;
 }
 
-{number} { // INT
-    yylval.nval = n_new_int(atol(yytext));
-    return INT;
+<SC_DEDENT>" "*. {
+    printf("Scanning DEDENT\n");
+    n_indent_pop();
+    for (size_t i = strlen(yytext)-1; i >= 0; i--)
+        unput(yytext[i]);
+    if (n_col > n_indent)
+        BEGIN SC_INDENT;
+    else if (n_col == n_indent)
+        BEGIN INITIAL;
+    return DEDENT;
 }
 
-{decimal}{exponent}? { // FLOAT
-    yylval.nval = n_new_float(atof(yytext));
-    return FLOAT;
-}
+<*># {{ // Strip comments
+    printf("Scanning comment\n");
+    char c;
+    while ((c = input()) && c != '\n');
+    unput(c);
+}}
 
-"="     { return ASSIGN; }
 
-"True"      { yylval.nval = n_new_boolean(1); return BOOL;   }
-"False"     { yylval.nval = n_new_boolean(0); return BOOL;   }
-"Null"      { yylval.nval = n_new_null(n_current_scope);       return N_NULL; }
-
-"or"    { return OR;  }
-"and"   { return AND; }
-"not"   { return NOT; }
-
-"=="    { return EQ;  }
-">="    { return GEQ; }
-"<="    { return LEQ; }
-"!="    { return NEQ; }
-">"     { return GT;  }
-"<"     { return LT;  }
-
-"+"     { return PLUS;    }
-"-"     { return DASH;    }
-"*"     { return AST;     }
-"/"     { return SLASH;   }
-"//"    { return DSLASH;  }
-"%"     { return PERCENT; }
-"**"    { return DAST;    }
-
-"("     { return LPAR; }
-")"     { return RPAR; }
-
-{word} { // NAME
-    yylval.nval = calloc(strlen(yytext)+1, sizeof(char));
-    strcpy(yylval.nval, yytext);
-    return NAME;
-}
-
-{whitespace}    { /* Ignore whitespace */ }
-"#".*           { /* Ignore comments */ }
-\n              { n_lineno++; return EOL; }
-.               { printf("Unrecognized character '%c'\n", *yytext); }
+. { // UNRECOGNIZED
+        printf( "Scanner error (%lu,%lu): Unrecognized character '%s'\n"
+               , n_line, n_col, yytext
+        );
+        n_col++;
+    }
 
 %%
