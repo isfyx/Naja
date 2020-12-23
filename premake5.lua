@@ -14,8 +14,10 @@ project "Naja"
 
     includedirs { "%{prj.location}" }
 
-    files { "%{prj.location}/**.c"
-    , "%{prj.location}/**.h"
+    files { "%{prj.location}/flex_bison/**.c"
+          , "%{prj.location}/flex_bison/**.h"
+          , "%{prj.location}/Naja/**.c"
+          , "%{prj.location}/Naja/**.h"
           }
 
     buildoptions { "-lfl" }
