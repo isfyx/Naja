@@ -41,8 +41,8 @@ newline \n[ \t]*
     printf("Scanning INDENT\n");
     n_indent_push();
     printf("'%s'%d\n", yytext, strlen(yytext));
-    for (size_t i = strlen(yytext)-1; i >= 0; i--)
-        unput(yytext[i]);
+    for (size_t i = strlen(yytext); i > 0; i--)
+        unput(yytext[i-1]);
     BEGIN INITIAL;
     return INDENT;
 }
@@ -50,8 +50,8 @@ newline \n[ \t]*
 <SC_DEDENT>" "*. {
     printf("Scanning DEDENT\n");
     n_indent_pop();
-    for (size_t i = strlen(yytext)-1; i >= 0; i--)
-        unput(yytext[i]);
+    for (size_t i = strlen(yytext); i > 0; i--)
+        unput(yytext[i-1]);
     if (n_col > n_indent)
         BEGIN SC_INDENT;
     else if (n_col == n_indent)
