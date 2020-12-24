@@ -1,17 +1,9 @@
-# comment
-
-not indented
-    indented
-
-dedented
-
-not indented
-    indented
-        indented twice
-
-dedented twice
-
-        indented twice
-    incorrectly dedented
-
-dedentedv
+3e3
+3e+3
+3e-3
+3.e3
+3.e+3
+3.e-3
+.3e3
+.3e+3
+.3e-3

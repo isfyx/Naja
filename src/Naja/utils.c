@@ -4,6 +4,14 @@
 
 #include "flex_bison/parser.h"
 
+
+// Parser
+
+void n_eval_stmt()
+{}
+
+// Scanner
+
 size_t n_col;
 size_t n_indent;
 size_t n_line;
@@ -15,8 +23,6 @@ struct n_IndentStack {
 };
 
 n_IndentStack* n_indent_stack;
-
-// Scanner
 
 void n_indent_pop()
 {

@@ -9,6 +9,10 @@ void yyerror(const char*);
 
 %define api.value.type { void* }
 
+%token INT FLOAT NAME
+
+%token ASSIGN
+
 %token INDENT DEDENT EOL
 
 %%
@@ -16,13 +20,21 @@ void yyerror(const char*);
 program: statements;
 
 statements:
-          | statements statement { }
+          | statements statement { n_eval_stmt($2); }
           ;
 
-statement: EOL      { }
-         | INDENT   { }
-         | DEDENT   { }
+statement: EOL
+         | assignment EOL
+         | expression EOL
          ;
+
+assignment: NAME ASSIGN expression;
+
+expression: value;
+
+value: INT
+     | FLOAT { printf("%f\n", *(double*)$1); }
+     ;
 
 %%
 

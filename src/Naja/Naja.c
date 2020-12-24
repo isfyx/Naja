@@ -10,6 +10,8 @@ int main(int argc, char const *argv[])
     if (argc > 1)
         yyin = fopen(argv[1], "r");
     yyparse();
+    if (argc > 1)
+        fclose(yyin);
     yylex_destroy();
     return 0;
 }
