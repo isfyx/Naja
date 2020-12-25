@@ -10,3 +10,6 @@ scanner.c
 
 # Valgrind
 valgrind-out*
+
+# Other
+*.out

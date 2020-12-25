@@ -1,0 +1,10 @@
+# A tail-recursive fib implementation
+
+def fib n:
+    if n < 1:
+        raise ValueError "fib: n must be greater than zero."
+    def go a b n:
+        if n < 3:
+            return b
+        return go (b) (a+b) (n-1)
+    return go 1 1 n
