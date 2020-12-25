@@ -9,32 +9,33 @@ void yyerror(const char*);
 
 %define api.value.type { void* }
 
-%token INT FLOAT NAME
-
-%token ASSIGN
-
+    // Structure
 %token INDENT DEDENT EOL
+    // Values
+%token INT FLOAT NAME STRING
+    // Keywords
+%token LAMBDA
 
 %%
 
 program: statements;
 
 statements:
-          | statements statement { n_eval_stmt($2); }
+          | statements statement
           ;
 
-statement: EOL
-         | assignment EOL
-         | expression EOL
-         ;
+statement: unparsed;
 
-assignment: NAME ASSIGN expression;
-
-expression: value;
-
-value: INT
-     | FLOAT { printf("%f\n", *(double*)$1); }
-     ;
+unparsed: EOL       { printf("EOL\n");   }
+        | INDENT    { printf("INDENT "); }
+        | DEDENT    { printf("DEDENT "); }
+        | INT       { printf("INT ");    }
+        | FLOAT     { printf("FLOAT ");  }
+        | NAME      { printf("NAME ");   }
+        | STRING    { printf("STRING "); }
+        | ':'       { printf(": ");      }
+        | '<'       { printf("< ");      }
+        ;
 
 %%
 

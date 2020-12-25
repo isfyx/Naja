@@ -4,31 +4,35 @@
 %}
 %option noyywrap
 %array
-%x SC_INDENT SC_DEDENT
+%x SC_INDENT SC_DEDENT SC_EOF
 
-num             [0-9]
-alpha           [a-zA-Z]
+alpha   [a-zA-Z]
+newline \n[ \t]*
+num     [0-9]
+oct     [0-7]
 
 alphanumeric    {alpha}|{num}
+hex             {num}|[a-fA-F]
+string_content  \\['"?\\abfnrtv]|\\{oct}{1,3}|\\[Xx]{hex}+|{ucn}
+ucn             \\u{hex}{4}|\\U{hex}{8}
 
-float   ({num}*\.{num}+|{num}+\.?)([eE][+-]?{num}+)?
-name    (_|{alpha})(_|{alphanumeric})*
-newline \n[ \t]*
+float           ({num}*\.{num}+|{num}+\.?)([eE][+-]?{num}+)?
+int             {num}+
+name            (_|{alpha})(_|{alphanumeric})*[!?]?
+string          \"([^"\\]|{string_content})*\"|\'([^'\\]|{string_content})*\'
 
 %%
 
-<<EOF>> {
+<SC_EOF><<EOF>> {
     while (n_indent) {
         n_indent_pop();
         return DEDENT;
     }
     yyterminate();
 }
+<<EOF>> { BEGIN SC_EOF; return EOL; }
 
-"="     { n_col++; return ASSIGN; }
-
-{num}+ {
-    printf("Scanning INT\n");
+{int} {
     n_col += strlen(yytext);
     yylval = malloc(sizeof(long));
     *(long*)yylval = atol(yytext);
@@ -36,7 +40,6 @@ newline \n[ \t]*
 }
 
 {float} {
-    printf("Scanning FLOAT\n");
     n_col += strlen(yytext);
     yylval = malloc(sizeof(double));
     *(double*)yylval = atof(yytext);
@@ -44,7 +47,6 @@ newline \n[ \t]*
 }
 
 {name} {
-    printf("Scanning NAME\n");
     size_t len = strlen(yytext);
     n_col += len;
     yylval = malloc(len+1);
@@ -52,12 +54,19 @@ newline \n[ \t]*
     return NAME;
 }
 
+{string} {
+    size_t len = strlen(yytext);
+    n_col += len;
+    yylval = malloc(len+1);
+    strcpy(yylval, yytext);
+    return STRING;
+}
+
 {newline} {
     char c = input();
+    unput(c);
     // Skip ahead if the next line is empty or a comment
     if (c != '#' && c != '\n') {
-        unput(c);
-
         n_col = strlen(yytext)-1;
 
         // Expand tabs
@@ -65,7 +74,7 @@ newline \n[ \t]*
             if (yytext[i] == '\t')
                 n_col += N_TAB_WIDTH-1;
 
-        //
+        // Unput whitespace
         if (n_col != n_indent) {
             for (size_t i = 0; i < n_col; i++)
                 unput(' ');
@@ -73,28 +82,28 @@ newline \n[ \t]*
         }
 
         n_line++;
+        n_col = 0;
         return EOL;
     }
-    unput(c);
     n_line++;
+    n_col = 0;
 }
 
-<SC_INDENT>" "*. {
-    printf("Scanning INDENT\n");
+<SC_INDENT>[ ]* {
+    n_col = strlen(yytext);
+    for (size_t i = 0; i < n_col; i++)
+        unput(' ');
     n_indent_push();
-    printf("'%s'%d\n", yytext, strlen(yytext));
-    for (size_t i = strlen(yytext); i > 0; i--)
-        unput(yytext[i-1]);
     n_col = 0;
     BEGIN INITIAL;
     return INDENT;
 }
 
-<SC_DEDENT>" "*. {
-    printf("Scanning DEDENT\n");
+<SC_DEDENT>[ ]* {
+    n_col = strlen(yytext);
+    for (size_t i = 0; i < n_col; i++)
+        unput(' ');
     n_indent_pop();
-    for (size_t i = strlen(yytext); i > 0; i--)
-        unput(yytext[i-1]);
     if (n_col > n_indent)
         BEGIN SC_INDENT;
     else if (n_col == n_indent) {
@@ -105,24 +114,16 @@ newline \n[ \t]*
 }
 
 <*># { // Strip comments
-    printf("Scanning comment\n");
     char c;
     while ((c = input()) && c != '\n');
     unput(c);
 }
 
-[ \t] { n_col++; /* Ignore whitespace */ }
+[ \t] { n_col += *yytext == '\t' ? N_TAB_WIDTH : 1; }
 
-. { // UNRECOGNIZED
-    fprintf( stderr
-           , (' ' <= *yytext && *yytext <= '~')
-           ? "%s%lu,%lu%s'%c'\n" : "%s%lu,%lu%s0x%02x\n"
-           , "Scanner error ("
-           , n_line, n_col
-           , "): Unrecognized character "
-           , *yytext
-    );
+. {
     n_col++;
+    return *yytext;
 }
 
 %%

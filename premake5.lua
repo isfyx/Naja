@@ -36,6 +36,6 @@ project "flex_bison"
     kind "Utility"
 
     prebuildcommands
-    { "bison -d -o %{prj.location}/parser.c %{prj.location}/parser.y"
+    { "bison -Wconflicts-sr -d -o %{prj.location}/parser.c %{prj.location}/parser.y"
     , "flex -o %{prj.location}/scanner.c %{prj.location}/scanner.l"
     }
