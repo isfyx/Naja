@@ -14,7 +14,8 @@ void n_eval_stmt()
 
 size_t n_col;
 size_t n_indent;
-size_t n_line;
+char*  n_line;
+size_t n_lineno;
 
 typedef struct n_IndentStack n_IndentStack;
 struct n_IndentStack {
@@ -48,5 +49,6 @@ void n_init()
     n_col          = 0;
     n_indent       = 0;
     n_indent_stack = 0;
-    n_line         = 1;
+    n_line         = 0;
+    n_lineno       = 1;
 }

@@ -6,7 +6,8 @@
 
 extern size_t n_col;
 extern size_t n_indent;
-extern size_t n_line;
+extern char*  n_line;
+extern size_t n_lineno;
 
 // Parser
 void n_eval_stmt();
