@@ -4,6 +4,12 @@ bin-int/
 Makefile
 
 # Flex & Bison
-Naja/src/flex_bison/parser.h
-Naja/src/flex_bison/parser.c
-Naja/src/flex_bison/scanner.c
+parser.h
+parser.c
+scanner.c
+
+# Valgrind
+valgrind-out*
+
+# Other
+*.out
