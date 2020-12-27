@@ -5,6 +5,7 @@
 #define N_TOKEN_LOG(...)    printf(__VA_ARGS__)
 
 void store_line();
+
 %}
 %option noyywrap
 %array

@@ -16,37 +16,40 @@ void yyerror(const char*);
     // Values
 %token INT FLOAT NAME STRING
     // Keywords
-%token PASS DEF IF RAISE RETURN
+%token PASS DEF IF ELSE RAISE RETURN
 
 %%
 
 program: statements;
 
-statements: %empty 
+statements: %empty
           | statements statement
           ;
 
-statement:                   EOL
-         |        block
+statement: EOL    statement
+         |        compound
          |        expression EOL
-         | PASS              EOL
          | RETURN expression EOL
          | RAISE  expression EOL
          ;
 
-block: head COL body;
+compound: definition
+        | conditional
+        ;
 
-head: DEF names
-    | IF  expression
-    ;
+block: COL EOL INDENT statements DEDENT
+     ;
+
+definition: DEF names block;
 
 names:       NAME
      | names NAME
      ;
 
-body: statement
-    | EOL INDENT statements DEDENT
-    ;
+conditional: IF expression block
+           | IF expression ELSE block
+           | IF expression ELSE conditional
+           ;
 
 expression: application
           | value
