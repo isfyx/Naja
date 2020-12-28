@@ -1,5 +1,5 @@
 # Naja
-*The programming language for learning how to write code*
+*The programming language for learning how to write code.*
 
 ## Motivation
 
