@@ -3,9 +3,9 @@
 namespace Naja
 {
     enum class TokenType
-    { EOF       = 0
-    , EOL       = '\n'
-    , NULL      = 256
+    { EOL       = '\n'
+    , INDENT    = 256
+    , DEDENT
     , INT
     , FLOAT
     , STRING

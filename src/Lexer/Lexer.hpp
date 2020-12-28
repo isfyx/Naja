@@ -1,7 +1,6 @@
 #pragma once
 
-#include <cstdio>
-#include <memory>
+#include <fstream>
 
 #include "Token.hpp"
 
@@ -11,8 +10,9 @@ namespace Naja
     {
     public:
         Lexer(const char* filename);
+        ~Lexer();
         Token next();
     private:
-        std::unique_ptr<FILE> s_file;
+        std::ifstream s_file;
     };
 }
