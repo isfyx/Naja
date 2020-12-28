@@ -1,6 +1,6 @@
 #pragma once
 
-#include <fstream>
+#include <iostream>
 
 #include "Token.hpp"
 
@@ -9,10 +9,9 @@ namespace Naja
     class Lexer
     {
     public:
-        Lexer(const char* filename);
-        ~Lexer();
+        Lexer(std::istream& in);
         Token next();
     private:
-        std::ifstream s_file;
+        std::istream* s_in;
     };
 }

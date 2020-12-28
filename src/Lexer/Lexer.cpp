@@ -2,18 +2,9 @@
 
 namespace Naja
 {
-    Lexer::Lexer(const char* filename)
-    {
-        s_file.open(filename);
-    }
-
-    Lexer::~Lexer()
-    {
-        s_file.close();
-    }
+    Lexer::Lexer(std::istream& in)
+        : s_in(&in) {}
 
     Token Lexer::next()
-    {
-
-    }
+    {}
 }
