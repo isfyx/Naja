@@ -39,9 +39,9 @@ With the compiler and interpreter in place, the next step will be developing doc
 
 ## Build Instructions
 
-Naja was developed using Premake 5.0.0-alpha15, available for download at https://premake.github.io/.
+Naja is currently being developed using Premake 5.0.0-alpha15, available for download at https://premake.github.io/.
 
-To generate makefiles and build the project with make, simply run:
+To generate makefiles and build the project, simply run:
 
     $ premake gmake && make
 
