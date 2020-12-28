@@ -7,4 +7,9 @@ namespace Naja
         std::unique_ptr<FILE> file(fopen(filename, "r"));
         s_file = std::move(file);
     }
+
+    Token Lexer::next()
+    {
+        
+    }
 }

@@ -11,4 +11,7 @@ namespace Naja
     , STRING
     , NAME
     };
+
+    class Token
+    {};
 }
