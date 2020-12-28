@@ -5,6 +5,6 @@ namespace Naja
     Lexer::Lexer(std::istream& in)
         : s_in(&in) {}
 
-    Token Lexer::next()
+    std::unique_ptr<Token> Lexer::next()
     {}
 }

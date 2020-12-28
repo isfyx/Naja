@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 
 #include "Token.hpp"
 
@@ -10,7 +11,7 @@ namespace Naja
     {
     public:
         Lexer(std::istream& in);
-        Token next();
+        std::unique_ptr<Token> next();
     private:
         std::istream* s_in;
     };
