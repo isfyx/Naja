@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     } else
         lexer = std::move(std::make_unique<Lexer>(std::cin));
 
-    std::unique_ptr<Token> currentToken;
-    while ((currentToken = std::move(lexer->next())) != nullptr)
-        currentToken->print();
+    Token currentToken;
+    while ((currentToken = lexer->next()) != Token::_EOF)
+        std::cout << (int)currentToken << std::endl;
 }
