@@ -5,30 +5,50 @@
 #include <memory>
 
 #include "Lexer/Lexer.hpp"
-#include "Lexer/Token.hpp"
 
 using namespace Naja;
 
 int main(int argc, char** argv)
 {
-    std::unique_ptr<Lexer> lexer;
-    
+    std::ifstream file;
+    std::istream* in;
+    char*         filename;
     if (argc > 1) {
-        std::ifstream in(argv[1]);
-        if (in.is_open())
-            lexer = std::move(std::make_unique<Lexer>(in));
-        else {
+        file.open(argv[1]);
+        if (!file.is_open()) {
             std::cerr << "Failed to open '"
                       << argv[1]
                       << "': "
                       << std::strerror(errno)
                       << std::endl;
-            exit(errno);
+            exit errno;
         }
-    } else
-        lexer = std::move(std::make_unique<Lexer>(std::cin));
+        filename = argv[1];
+        in = &file;
+    } else {
+        in = &std::cin;
+        filename = "stdin";
+    }
 
+    Lexer lexer(*in, filename);
     Token currentToken;
-    while ((currentToken = lexer->next()) != Token::_EOF)
-        std::cout << (int)currentToken << std::endl;
+    while ((currentToken = lexer.next()) != Token::_EOF)
+        switch (currentToken) {
+            case Token::INDENT:
+                std::cout << "INDENT ";
+                break;
+            case Token::DEDENT:
+                std::cout << "DEDENT ";
+                break;
+            case Token::EOL:
+                std::cout << "EOL" << std::endl;
+                break;
+            case Token::STRING:
+                std::cout << "\""
+                          << lexer.get_string_value()
+                          << "\" ";
+                break;
+            default:;
+        }
+    std::cout << "EOF" << std::endl;
 }

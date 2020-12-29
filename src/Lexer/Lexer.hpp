@@ -1,9 +1,6 @@
 #pragma once
 
 #include <iostream>
-#include <memory>
-
-#include "Token.hpp"
 
 namespace Naja
 {
@@ -17,10 +14,12 @@ namespace Naja
     , NAME
     };
 
+    typedef struct s_dedent_t s_dedent_t;
+
     class Lexer
     {
     public:
-        Lexer(std::istream& istream);
+        Lexer(std::istream& istream, char* filename);
         ~Lexer();
         
         inline long   get_int_value()    const  { return s_int;    }
@@ -29,9 +28,19 @@ namespace Naja
         
         Token next();
     private:
-        std::istream* s_istream;
-        long          s_int;
-        double        s_float;
-        char*         s_string;
+        void s_readline();
+        bool s_is_whitespace(char& c);
+
+        std::istream*       s_istream;
+        size_t              s_lineno;
+        size_t              s_colno;
+        size_t              s_indent;
+        s_dedent_t*         s_dedent;
+        bool                s_eol;
+        char*               s_curfilename;
+        char*               s_curline;
+        long                s_int;
+        double              s_float;
+        char*               s_string;
     };
 }
