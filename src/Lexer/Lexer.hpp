@@ -19,12 +19,12 @@ namespace Naja
     class Lexer
     {
     public:
-        Lexer(std::istream& istream, char* filename);
+        Lexer(std::istream& istream, std::string filename);
         ~Lexer();
         
-        inline long   get_int_value()    const  { return s_int;    }
-        inline double get_float_value()  const  { return s_float;  }
-        inline char*  get_string_value() const  { return s_string; }
+        inline long        get_int_value()    const  { return s_int;    }
+        inline double      get_float_value()  const  { return s_float;  }
+        inline std::string get_string_value() const  { return s_string; }
         
         Token next();
     private:
@@ -37,10 +37,10 @@ namespace Naja
         size_t              s_indent;
         s_dedent_t*         s_dedent;
         bool                s_eol;
-        char*               s_curfilename;
-        char*               s_curline;
+        std::string         s_curfilename;
+        std::string         s_curline;
         long                s_int;
         double              s_float;
-        char*               s_string;
+        std::string         s_string;
     };
 }

@@ -12,7 +12,7 @@ namespace Naja
         s_dedent_t* next;
     };
 
-    Lexer::Lexer(std::istream& istream, char* filename)
+    Lexer::Lexer(std::istream& istream, std::string filename)
         : s_istream         (&istream)
         , s_lineno          (0)
         , s_colno           (0)
@@ -20,14 +20,10 @@ namespace Naja
         , s_dedent          (0)
         , s_eol             (true)
         , s_curfilename     (filename)
-        , s_curline         ((char*) calloc(N_STR_BUF_SIZE, sizeof(char)))
-        , s_string          ((char*) calloc(N_STR_BUF_SIZE, sizeof(char)))
         {}
 
     Lexer::~Lexer()
     {
-        free(s_curline);
-        free(s_string);
     }
 
     Token Lexer::next()
@@ -80,8 +76,8 @@ namespace Naja
             return Token::EOL;
         }
         
-        strcpy(s_string, &s_curline[s_colno]);
-        s_colno += strlen(s_string);
+        s_string = &s_curline[s_colno];
+        s_colno += s_string.size();
 
         return Token::STRING;
     }
@@ -91,7 +87,7 @@ namespace Naja
         if (s_istream->eof())
             return;
 
-        s_istream->getline(s_curline, N_STR_BUF_SIZE);
+        std::getline(*s_istream, s_curline);
         s_lineno++;
         s_colno = 0;
         
