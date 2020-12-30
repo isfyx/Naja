@@ -3,6 +3,9 @@ bin/
 bin-int/
 Makefile
 
+# Valgrind
+valgrind*
+
 # Other
 *.out
 sandbox*
