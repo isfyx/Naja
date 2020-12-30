@@ -1,0 +1,16 @@
+# Tail-recursive fib implementation
+
+def fib n:
+    if dec? 0 n:
+        raise ValueError "fib n: n must be greater than zero."
+    def go a b n:
+        if dec? 2 n:
+            return b
+        return go b (sum a b) (diff n 1)
+    return go 1 1 n
+
+fib 5
+fib 4
+fib 3
+fib 2
+fib 1

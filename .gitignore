@@ -2,3 +2,7 @@
 bin/
 bin-int/
 Makefile
+
+# Other
+*.out
+sandbox*
