@@ -30,7 +30,10 @@ namespace Naja
         Token next();
     private:
         void s_readline();
+        bool s_is_echar(char& c);
+        bool s_is_hex(char& c);
         bool s_is_num(char& c);
+        bool s_is_oct(char& c);
         bool s_is_sign(char& c);
         bool s_is_whitespace(char& c);
 

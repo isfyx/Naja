@@ -110,6 +110,84 @@ namespace Naja
 
         strings:
         // Handle strings
+        if (s_curline[s_colno] == '\'' || s_curline[s_colno] == '\"') {
+            char c, delim = s_curline[s_colno];
+            size_t len = 1;
+            while (c) {
+                if (c == '\\') {
+                    len++;
+                    c = s_curline[s_colno+len];
+                    
+                    if (!(s_is_echar(c) || s_is_oct(c))) {
+                        std::cerr << "Lexer error on line "
+                                  << s_lineno
+                                  << ": Unrecognized escape sequence '\\"
+                                  << c << "'." << std::endl;
+                        exit(1);
+                    } 
+                    
+                    if (s_is_echar(c)) {
+                        if (c == 'x') {
+                            len++;
+                            c = s_curline[s_colno+len];
+                            if (!s_is_hex(c)) {
+                                std::cerr << "Lexer error on line "
+                                          << s_lineno
+                                          << ": Unrecognized escape sequence '\\x"
+                                          << c << "'." << std::endl;
+                                exit(1);
+                            } else do {
+                                len++;
+                                c = s_curline[s_colno+len];
+                            } while (s_is_hex(c));
+                        } else if (c == 'u') {
+                            for (size_t i = 0; i < 4; i++) {
+                                len++;
+                                c = s_curline[s_colno+len];
+                                if (!s_is_hex(c)) {
+                                    std::cerr << "Lexer error on line "
+                                              << s_lineno
+                                              << ": Escape sequence '\\u' must be followed "
+                                              << "by exactly four hexadecimal digits."
+                                              << std::endl;
+                                    exit(1);
+                                }
+                            }
+                        } else if (c == 'U') {
+                            for (size_t i = 0; i < 8; i++) {
+                                len++;
+                                c = s_curline[s_colno+len];
+                                if (!s_is_hex(c)) {
+                                    std::cerr << "Lexer error on line "
+                                              << s_lineno
+                                              << ": Escape sequence '\\U' must be followed "
+                                              << "by exactly eight hexadecimal digits."
+                                              << std::endl;
+                                    exit(1);
+                                }
+                            }
+                        }
+                    } else for (size_t i = 0; i < 3 && s_is_oct(c); i++) {
+                        len++;
+                        c = s_curline[s_colno+len];
+                    }
+                }
+                if (c == delim) {
+                    s_string = s_curline.substr(s_colno, len);
+                    s_colno += len;
+                    return Token::STRING;
+                }
+                if (!c) break;
+                len++;
+                c = s_curline[s_colno+len];
+            }
+            std::cerr << "Lexer error on line "
+                      << s_lineno
+                      << ": Unexpected end of line."
+                      << std::endl;
+            exit(1);                   
+        }
+
         s_string = s_curline.substr(s_colno);
         s_colno += s_string.size();
 
@@ -136,9 +214,42 @@ namespace Naja
         s_eol   = false;
     }
 
+    inline bool Lexer::s_is_echar(char& c)
+    {
+        return (  c == 'a'
+               || c == 'b'
+               || c == 'e'
+               || c == 'f'
+               || c == 'n'
+               || c == 'r'
+               || c == 't'
+               || c == 'U'
+               || c == 'u'
+               || c == 'v'
+               || c == 'x'
+               || c == '\\'
+               || c == '\''
+               || c == '\"'
+               || c == '\?'
+               );
+    }
+
+    inline bool Lexer::s_is_hex(char& c)
+    {
+        return (  s_is_num(c)
+               || ('a' <= c && c <= 'f')
+               || ('A' <= c && c <= 'F')
+               );
+    }
+
     inline bool Lexer::s_is_num(char& c)
     {
         return ('0' <= c && c <= '9');
+    }
+
+    inline bool Lexer::s_is_oct(char& c)
+    {
+        return ('0' <= c && c <= '7');
     }
 
     inline bool Lexer::s_is_sign(char& c)
