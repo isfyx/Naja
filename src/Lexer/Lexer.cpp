@@ -193,10 +193,43 @@ namespace Naja
             exit(1);
         }
 
+        // Handle Symbols
+        // TODO
+        
+        // Handle keywords
+        {
+            size_t len;
+
+            if ((len = s_keyword("def"))) {
+                s_colno += len;
+                return Token::DEFINE;
+            }
+            if ((len = s_keyword("if"))) {
+                s_colno += len;
+                return Token::IF;
+            }
+            if ((len = s_keyword("else"))) {
+                s_colno += len;
+                return Token::ELSE;
+            }
+        }
+
+        // Handle names
+        // TODO
+
         s_string = s_curline.substr(s_colno);
         s_colno += s_string.size();
 
         return Token::STRING;
+    }
+
+    size_t Lexer::s_keyword(const char* keyword)
+    {
+        size_t len  = strlen(keyword);
+        char   next = s_curline[s_colno+len];
+        if (!next || !(s_is_whitespace(next) || next == '.'))
+            return 0;
+        return s_curline.substr(s_colno).rfind(keyword, 0) == 0 ? len : 0;
     }
 
     void Lexer::s_readline()

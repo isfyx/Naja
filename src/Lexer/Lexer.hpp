@@ -12,7 +12,8 @@ namespace Naja
     , INDENT    = 256
     , DEDENT    , INT
     , FLOAT     , STRING
-    , NAME
+    , NAME      , DEFINE
+    , IF        , ELSE
     };
 
     typedef struct s_dedent_t s_dedent_t;
@@ -29,13 +30,14 @@ namespace Naja
         
         Token next();
     private:
-        void s_readline();
-        bool s_is_echar(char& c);
-        bool s_is_hex(char& c);
-        bool s_is_num(char& c);
-        bool s_is_oct(char& c);
-        bool s_is_sign(char& c);
-        bool s_is_whitespace(char& c);
+        size_t s_keyword(const char* keyword);
+        void   s_readline();
+        bool   s_is_echar(char& c);
+        bool   s_is_hex(char& c);
+        bool   s_is_num(char& c);
+        bool   s_is_oct(char& c);
+        bool   s_is_sign(char& c);
+        bool   s_is_whitespace(char& c);
 
         std::istream*       s_istream;
         size_t              s_lineno;
