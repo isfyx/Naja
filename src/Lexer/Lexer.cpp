@@ -111,81 +111,86 @@ namespace Naja
         strings:
         // Handle strings
         if (s_curline[s_colno] == '\'' || s_curline[s_colno] == '\"') {
-            char c, delim = s_curline[s_colno];
-            size_t len = 1;
-            while (c) {
-                if (c == '\\') {
-                    len++;
-                    c = s_curline[s_colno+len];
-                    
-                    if (!(s_is_echar(c) || s_is_oct(c))) {
-                        std::cerr << "Lexer error on line "
-                                  << s_lineno
-                                  << ": Unrecognized escape sequence '\\"
-                                  << c << "'." << std::endl;
-                        exit(1);
-                    } 
-                    
-                    if (s_is_echar(c)) {
-                        if (c == 'x') {
-                            len++;
-                            c = s_curline[s_colno+len];
-                            if (!s_is_hex(c)) {
-                                std::cerr << "Lexer error on line "
-                                          << s_lineno
-                                          << ": Unrecognized escape sequence '\\x"
-                                          << c << "'." << std::endl;
-                                exit(1);
-                            } else do {
-                                len++;
-                                c = s_curline[s_colno+len];
-                            } while (s_is_hex(c));
-                        } else if (c == 'u') {
-                            for (size_t i = 0; i < 4; i++) {
-                                len++;
-                                c = s_curline[s_colno+len];
-                                if (!s_is_hex(c)) {
-                                    std::cerr << "Lexer error on line "
-                                              << s_lineno
-                                              << ": Escape sequence '\\u' must be followed "
-                                              << "by exactly four hexadecimal digits."
-                                              << std::endl;
-                                    exit(1);
-                                }
-                            }
-                        } else if (c == 'U') {
-                            for (size_t i = 0; i < 8; i++) {
-                                len++;
-                                c = s_curline[s_colno+len];
-                                if (!s_is_hex(c)) {
-                                    std::cerr << "Lexer error on line "
-                                              << s_lineno
-                                              << ": Escape sequence '\\U' must be followed "
-                                              << "by exactly eight hexadecimal digits."
-                                              << std::endl;
-                                    exit(1);
-                                }
-                            }
-                        }
-                    } else for (size_t i = 0; i < 3 && s_is_oct(c); i++) {
-                        len++;
-                        c = s_curline[s_colno+len];
-                    }
-                }
-                if (c == delim) {
-                    s_string = s_curline.substr(s_colno, len);
-                    s_colno += len;
+            char delim = s_curline[s_colno];
+            s_string.clear();
+            s_colno++;
+            while (s_curline[s_colno]) {
+                if (s_curline[s_colno] == delim) {
+                    s_colno++;
                     return Token::STRING;
                 }
-                if (!c) break;
-                len++;
-                c = s_curline[s_colno+len];
+                if (s_curline[s_colno] == '\\') {
+                    s_colno++;
+                    char   c   = s_curline[s_colno];
+                    size_t len = 1;
+                    if (s_is_echar(c)) {
+                        switch (c) {
+                            case 'a'  : c = '\a'; break;
+                            case 'b'  : c = '\b'; break;
+                            case 'e'  : c = '\e'; break;
+                            case 'f'  : c = '\f'; break;
+                            case 'n'  : c = '\n'; break;
+                            case 'r'  : c = '\r'; break;
+                            case 't'  : c = '\t'; break;
+                            case 'v'  : c = '\v'; break;
+                            case '\\' : c = '\\'; break;
+                            case '\'' : c = '\''; break;
+                            case '\"' : c = '\"'; break;
+                            case '\?' : c = '\?'; break;
+                        }
+                    } else if (s_is_oct(c)) {
+                        c = stoi(s_curline.substr(s_colno, 3), &len, 8);
+                    // } else if (c == 'u') {
+                    //     s_colno++;
+                    //     int ucn = stoi(s_curline.substr(s_colno, 4), &len, 16);
+                    //     if (len != 4) {
+                    //         std::cerr << "Lexer error on line "
+                    //                   << s_lineno
+                    //                   << ": Escape sequence '\\u' must be "
+                    //                   << "followed by exactly four hexadecimal "
+                    //                   << "digits."
+                    //                   << std::endl;
+                    //         exit(1); 
+                    //     }
+                    //     s_string += (char)(ucn/0xff);
+                    //     c = (char)(ucn%0xff);
+                    // } else if (c == 'U') {
+                    //     s_colno++;
+                    //     long ucn = stol(s_curline.substr(s_colno, 8), &len, 16);
+                    //     if (len != 8) {
+                    //         std::cerr << "Lexer error on line "
+                    //                   << s_lineno
+                    //                   << ": Escape sequence '\\U' must be "
+                    //                   << "followed by exactly eight hexadecimal "
+                    //                   << "digits."
+                    //                   << std::endl;
+                    //         exit(1); 
+                    //     }
+                    //     s_string += (char)(ucn/0xffffff);
+                    //     s_string += (char)((ucn/0xffff)%0xff);
+                    //     s_string += (char)((ucn/0xff)%0xffff);
+                    //     c = (char)(ucn%0xff);
+                    } else if (c == 'x') {
+                        s_colno++;
+                        c = stoi(s_curline.substr(s_colno, 2), &len, 16);
+                    } else {
+                        std::cerr << "Lexer error on line "
+                                  << s_lineno
+                                  << ": Invalid escape sequence '\\"
+                                  << c << "'." << std::endl;
+                        exit(1);
+                    }
+                    s_string += c;
+                    s_colno  += len;
+                } else {
+                    s_string += s_curline[s_colno++];
+                }
             }
             std::cerr << "Lexer error on line "
                       << s_lineno
-                      << ": Unexpected end of line."
+                      << ": Invalid string literal."
                       << std::endl;
-            exit(1);                   
+            exit(1);
         }
 
         s_string = s_curline.substr(s_colno);
@@ -223,10 +228,7 @@ namespace Naja
                || c == 'n'
                || c == 'r'
                || c == 't'
-               || c == 'U'
-               || c == 'u'
                || c == 'v'
-               || c == 'x'
                || c == '\\'
                || c == '\''
                || c == '\"'
