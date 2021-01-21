@@ -12,7 +12,7 @@ int main(int argc, char** argv)
 {
     std::ifstream file;
     std::istream* in;
-    char*         filename;
+    std::string   filename;
     if (argc > 1) {
         file.open(argv[1]);
         if (!file.is_open()) {
@@ -43,10 +43,26 @@ int main(int argc, char** argv)
             case Token::EOL:
                 std::cout << "EOL" << std::endl;
                 break;
+            case Token::INT:
+                std::cout << "INT:"
+                          << lexer.get_int_value()
+                          << " ";
+                break;
+            case Token::FLOAT:
+                std::cout << "FLOAT:"
+                          << lexer.get_float_value()
+                          << " ";
+                break;
             case Token::STRING:
-                std::cout << "\""
+                std::cout << "STRING:\""
                           << lexer.get_string_value()
                           << "\" ";
+                break;
+            case Token::DEFINE:
+                std::cout << "DEFINE ";
+                break;
+            case Token::IF:
+                std::cout << "IF ";
                 break;
             default:;
         }

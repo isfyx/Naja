@@ -1,6 +1,6 @@
 # Tail-recursive fib implementation
 
-def fib n:
+defif fib n:
     if dec? 0 n:
         raise ValueError "fib n: n must be greater than zero."
     def go a b n:
@@ -14,3 +14,5 @@ fib 4
 fib 3
 fib 2
 fib 1
+
+"\x3D"
