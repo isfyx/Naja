@@ -11,7 +11,7 @@ We live in a world where knowledge within the field of informatics is both in in
 
 Naja aims to achieve its goals and help solve these problems by providing a programming language, of which the primary focus is to be easily teachable.
 
-For speed we have C, for mobility we have Java, for web development we have JavaScript and for everything else we have Python. Python, with its focus on readability, is great for learning how to code. It is however, first and foremost, a tool made for building.
+For speed we have C, for portability we have Java, for web development we have JavaScript and for everything else we have Python. Python, with its focus on readability, is great for learning how to code. It is however, first and foremost, a tool made for building.
 
 Naja will be the tool for teaching.
 
