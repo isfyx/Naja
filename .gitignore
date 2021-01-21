@@ -1,15 +1,11 @@
-# Premake5
+# Premake
 bin/
 bin-int/
 Makefile
 
-# Flex & Bison
-parser.h
-parser.c
-scanner.c
-
 # Valgrind
-valgrind-out*
+valgrind*
 
 # Other
 *.out
+sandbox*
